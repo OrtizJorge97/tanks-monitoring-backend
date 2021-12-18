@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = 'gjr39dkjn344_!67#'
 app.config["JWT_SECRET_KEY"] = "super-secret" 
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=15) #normal token expires
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15) #normal token expires
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(hours=24) #refresh token expire time
 #refresh token is for using when you want to refresh the normal token.
 #this refresh token also expires, but can be renew by logging in again, this must have a 
