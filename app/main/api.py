@@ -4,10 +4,12 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt
+from flask_socketio import emit
 
 #from . import main
 from . import api_blueprint, session
 from .models import *
+from .. import socketio
 
 @api_blueprint.route("/", methods=["GET"])
 def index():
@@ -51,6 +53,12 @@ def add_user():
     except Exception as e:
         return make_response(jsonify({"message": str(e)}), 500)
 
+@api_blueprint.route("/post-data", methods=["POST"])
+def post_data():
+    payload = request.get_json()
+    print(payload)
+    socketio.emit('tanks_data', payload, namespace='/private', to=payload["company"])
+    return make_response(jsonify(msg="Success"), 200)
 """
 @main.route("/", methods=["GET"])
 def index():
