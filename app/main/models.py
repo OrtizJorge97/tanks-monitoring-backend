@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, Float
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -28,3 +28,19 @@ class Companies(Base):
     company = Column(String(30), nullable=False)
     address = Column(Text)
     users = relationship('Users')
+    tanks = relationship('Tanks')
+
+class Tanks(Base): #child from companies
+    __tablename__ = "tanks"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True, nullable=False)
+    tank_name = Column(String(30), nullable=False)
+    company_id = Column(Integer, ForeignKey('companies.id'))
+    tanks = relationship('Measures_Categories')
+
+class Measures_Categories(Base): #child from tanks
+    __tablename__ = "measures_categories"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True, nullable=False)
+    measure_type = Column(String(30), nullable=False)
+    tank_min_value = Column(Float, nullable=False)
+    tank_max_value = Column(Float, nullable=False)
+    tank_id = Column(Integer, ForeignKey('tanks.id'))

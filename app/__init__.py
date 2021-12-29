@@ -3,15 +3,19 @@ from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
 
 from datetime import timedelta
+import os
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
+
+load_dotenv()
 
 socketio = SocketIO(cors_allowed_origins='*')
 app = Flask(__name__)
 app.debug = True
-app.config['SECRET_KEY'] = 'gjr39dkjn344_!67#'
-app.config["JWT_SECRET_KEY"] = "super-secret" 
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15) #normal token expires
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(hours=24) #refresh token expire time
 #refresh token is for using when you want to refresh the normal token.
