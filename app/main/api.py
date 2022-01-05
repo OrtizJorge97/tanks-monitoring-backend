@@ -6,11 +6,15 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt
 from flask_socketio import emit
 
+import concurrent.futures
+
 #from . import main
 from . import api_blueprint, session
 from .models import *
 from .. import socketio
 from .utilities import constants
+from .Services.database import AsyncDataBaseManager
+from .utilities.convertions import *
 
 @api_blueprint.route("/", methods=["GET"])
 def index():
@@ -122,40 +126,20 @@ def add_tank():
         return make_response(jsonify(msg=str(e)), 500)
 
 
-"""
-class Measures_Categories(Base): #child from tanks
-    __tablename__ = "measures_categories"
-    id = Column(Integer, primary_key=True, unique=True, autoincrement=True, nullable=False)
-    measure_type = Column(String(30), nullable=False)
-    tank_min_value = Column(Float, nullable=False)
-    tank_max_value = Column(Float, nullable=False)
-    tank_id = Column(Integer, ForeignKey('tanks.id'))
-"""
+@api_blueprint.route("/fetch-tank", methods=["GET"])
+@jwt_required()
+def fetch_tank():
+    try:
+        tankId = request.args.get("tankId")
 
-"""
-tank_name = Column(String(30), nullable=False)
-    company_id = Column(Integer, ForeignKey('companies.id'))"""
+        executor = concurrent.futures.ThreadPoolExecutor()
+        future = executor.submit(AsyncDataBaseManager.get_tank_parameters, tankId)
+        future_result = future.result()
 
-"""
-@main.route("/", methods=["GET"])
-def index():
-    #print(request.sid)
-    return "loooo"
+        tank_parameters = convert_tank_parameters(future_result)
 
-id = Column(Integer, primary_key=True, unique=True, autoincrement=True, nullable=False)
-    name = Column(String(20))
-    last_name = Column(String(50))
-    email = Column(String(40), unique=True, nullable=False)
-    password = Column(Text)
-    user_verified = Column(Boolean())
-    role = Column(String(10))
-    company_id = Column(Integer, ForeignKey('companies.id'))
-    sessions = relationship('Sessions')
-
-class Companies(Base):
-    __tablename__ = "companies"
-    id = Column(Integer, primary_key=True, unique=True, autoincrement=True, nullable=False)
-    company = Column(Integer, nullable=False)
-    address = Column(Text)
-    users = relationship('Users')
-"""
+        return make_response(jsonify(msg="Successfully fetched", 
+                                     parameters=tank_parameters,
+                                     tankId=tankId), 200)
+    except Exception as e:
+        return make_response(jsonify(msg=str(e)), 500)

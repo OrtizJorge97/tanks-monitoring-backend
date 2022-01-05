@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt
 from flask_jwt_extended import create_refresh_token
 import bcrypt
+import concurrent.futures
 
 import time
 from datetime import timedelta
@@ -12,6 +13,7 @@ from datetime import timedelta
 from . import auth_blueprint, session
 from .models import *
 from .utilities.constants import *
+from .Services.database import AsyncDataBaseManager
 
 # Create a route to authenticate your users and return JWTs. The
 # create_access_token() function is used to actually generate the JWT.
@@ -88,16 +90,16 @@ class Companies(Base):
 def login():
     email = request.json.get("email", None)
     password = request.json.get("password", None)
-    print(request.get_json())
-    user_db = session.query(Users.name, Users.last_name, Users.password, Companies.company, Users.email, Users.role).select_from(Users)\
-                                  .join(Companies, Companies.id == Users.company_id)\
-                                  .filter(Users.email==email)\
-                                  .first()
+
+    executor = concurrent.futures.ThreadPoolExecutor()
+    future = executor.submit(AsyncDataBaseManager.join_user_company_by_email, email)
+    user_db = future.result()
+
     print("user db weee")
     print(user_db)
     #mail not found, meaning user does not exist
     if not user_db:
-        return make_response(jsonify({"message": "User not found"}), 404)
+        return make_response(jsonify({"msg": "User not found"}), 404)
 
     #password incorrect, notify user.
     if not bcrypt.checkpw(password.encode("utf-8"), user_db[2].encode("utf-8")):
@@ -112,10 +114,11 @@ def login():
     }
     access_token = create_access_token(identity=email, additional_claims=user_claims)
     refresh_token = create_refresh_token(identity=email, additional_claims=user_claims)
-    return make_response(jsonify(message="Succesfully authenticated",
+    return make_response(jsonify(msg="Succesfully authenticated",
                                  access_token=access_token, 
                                  refresh_token=refresh_token,
                                  user=user_claims), 200)
+
 
 @auth_blueprint.route("/get-user", methods=["GET"])
 @jwt_required()

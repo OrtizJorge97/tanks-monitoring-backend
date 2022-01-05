@@ -8,3 +8,10 @@ tanks_company = {
     "tanks": [],
     "company": []
 }
+
+tank_parameter_dictionary = {
+    "tankId": "",
+    "parameter": "",
+    "tankMinValue": "",
+    "tankMaxValue": ""
+}
