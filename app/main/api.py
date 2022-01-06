@@ -143,3 +143,34 @@ def fetch_tank():
                                      tankId=tankId), 200)
     except Exception as e:
         return make_response(jsonify(msg=str(e)), 500)
+
+@api_blueprint.route("/update-tank", methods=["POST"])
+@jwt_required()
+def update_tank():
+    try:
+        tank_new_values = request.get_json()
+        print("-------TANK ID NEW VALUES----------")
+        print(tank_new_values)
+        executor = concurrent.futures.ThreadPoolExecutor()
+        future = executor.submit(AsyncDataBaseManager.update_tank_parameters, tank_new_values)
+        future.result()
+
+        return make_response(jsonify(msg="Succesfully updated"), 200)
+    except Exception as e:
+        return make_response(jsonify(msg=str(e)), 500)
+
+@api_blueprint.route("/delete-tank", methods=["DELETE"])
+@jwt_required()
+def delete_tank():
+    try:
+        tank = request.get_json()
+        print("------------TANK NAME TO DELETE-----------")
+        print(tank)
+
+        executor = concurrent.futures.ThreadPoolExecutor()
+        future = executor.submit(AsyncDataBaseManager.delete_tank, tank['tankId'])
+        future.result()
+
+        return make_response(jsonify(msg="Operation Succeded"), 200)
+    except Exception as e:
+        return make_response(jsonify(msg=str(e)), 500)
