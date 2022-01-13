@@ -53,6 +53,29 @@ class AsyncDataBaseManager:
         #COMMIT SESSION
         AsyncDataBaseManager.db_session.commit()
 
+    def get_tank_company(tanksData):
+        company = None
+        tanks_name = tanksData.get('id')
+
+        for tank_name in tanks_name:
+            tank_exists, tank_name_db = (AsyncDataBaseManager.db_session.query(Tanks).filter_by(tank_name=tank_name).first() != None), AsyncDataBaseManager.db_session.query(Tanks).filter_by(tank_name=tank_name).first()
+            print("-----DEBUGGING TANKS--------")
+            print(f"tank name: {tank_name}, tank name from db: {tank_name_db}, tank exists?: {tank_exists}")
+            
+            if tank_exists:
+                result_db = AsyncDataBaseManager.db_session.query(Tanks.tank_name, Companies.company)\
+                                                    .select_from(Tanks)\
+                                                    .join(Companies, Tanks.company_id == Companies.id)\
+                                                    .filter(Tanks.tank_name == tank_name_db.tank_name)\
+                                                    .first()
+                company = result_db[1]
+                
+                break
+            
+        return company
+
+        
+
         
 
 

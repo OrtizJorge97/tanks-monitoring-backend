@@ -61,10 +61,20 @@ def add_user():
 #DATA TO RECEIVE FROM TANKS AND TO SAVE IT INTO HISTORIC DATA
 @api_blueprint.route("/post-data", methods=["POST"])
 def post_data():
-    payload = request.get_json()
-    print(payload)
-    socketio.emit('tanks_data', payload, namespace='/private', to=payload["company"])
-    return make_response(jsonify(msg="Success"), 200)
+    try:
+        payload = request.get_json()
+        print(payload)
+
+        executor = concurrent.futures.ThreadPoolExecutor()
+        future = executor.submit(AsyncDataBaseManager.get_tank_company, payload)
+        company = future.result()
+        print(company)
+
+        socketio.emit('tanks_data', payload, namespace='/private', to=company)
+        socketio.emit('get_tank_data', payload, namespace='/private', to=company)
+        return make_response(jsonify(msg="Success"), 200)
+    except Exception as e:
+        return make_response(jsonify(msg=str(e)), 500)
 
 @api_blueprint.route("/fetch-tanks", methods=["GET"])
 @jwt_required()
