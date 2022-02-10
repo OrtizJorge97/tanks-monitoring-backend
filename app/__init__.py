@@ -31,6 +31,9 @@ app.register_blueprint(api_blueprint)
 from .main import auth_blueprint
 app.register_blueprint(auth_blueprint)
 
+from .main import tank_api_blueprint
+app.register_blueprint(tank_api_blueprint)
+
 jwt = JWTManager(app)
 socketio.init_app(app)
 

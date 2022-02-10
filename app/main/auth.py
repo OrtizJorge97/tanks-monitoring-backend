@@ -103,7 +103,7 @@ def login():
 
     #password incorrect, notify user.
     if not bcrypt.checkpw(password.encode("utf-8"), user_db[2].encode("utf-8")):
-        return make_response(jsonify({"message": "Password incorrect"}), 200)
+        return make_response(jsonify({"msg": "Password incorrect"}), 200)
 
     user_claims = {
         "name": user_db[0], 
