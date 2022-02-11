@@ -21,8 +21,8 @@ def post_data():
         future = executor.submit(AsyncDataBaseManager.get_tank_company, payload)
         company = future.result()
 
-        #future = executor.submit(AsyncDataBaseManager.store_measurements, payload)
-        #result = future.result()
+        future = executor.submit(AsyncDataBaseManager.store_measurements, payload)
+        result = future.result()
 
         print(company)
 
@@ -36,8 +36,6 @@ def post_data():
         return make_response(jsonify(msg=str(e)), 500)
 
 # DATA TO RECEIVE FROM TANKS AND TO SAVE IT INTO HISTORIC DATA
-
-
 @tank_api_blueprint.route("/fetch-tanks", methods=["GET"])
 def fetch_tanks():
     print("sdsddddddd")
