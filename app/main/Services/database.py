@@ -9,7 +9,7 @@ class AsyncDataBaseManager:
     db_session = session
 
     def join_user_company_by_email(email):
-        user_db = AsyncDataBaseManager.db_session.query(Users.name, Users.last_name, Users.password, Companies.company, Users.email, Users.role).select_from(Users)\
+        user_db = AsyncDataBaseManager.db_session.query(Users.name, Users.last_name, Users.password, Companies.company, Users.email, Users.role, Users.user_verified).select_from(Users)\
             .join(Companies, Companies.id == Users.company_id)\
             .filter(Users.email == email)\
             .first()
@@ -261,6 +261,43 @@ class AsyncDataBaseManager:
         print(tanks_data_list)
 
         return tanks_data_list
+
+    def get_company_staff(company):
+        query = '''select email 
+                    from users u
+                    join companies c on c.id = u.company_id
+                    where c.company='{company}' and role in ('Supervisor', 'Administrator');'''.format(
+                        company=company
+                    )
+        email_results = None
+        with engine.connect() as con:
+            results = con.execute(text(query))
+            #print(con.columns)
+            email_results = [dict(zip(row.keys(), row.values())) for row in results]
+            print("---------------SUPERVISOR AND ADMINISTRATOR EMAILS-----------------")
+            print(email_results)
+
+        return email_results
+
+    def get_tanks_parameters_query(company):
+        query = '''
+        select t.tank_name, meas_cat.measure_type, meas_cat.tank_min_value, meas_cat.tank_max_value
+        from tanks t
+        join measures_categories meas_cat on t.id = meas_cat.tank_id
+        join companies c on t.company_id = c.id
+        where c.company = '{company}';'''.format(
+            company=company
+        )
+        tanks_parameters_results = None
+        with engine.connect() as con:
+            results = con.execute(text(query))
+            #print(con.columns)
+            tanks_parameters_results = [dict(zip(row.keys(), row.values())) for row in results]
+            print("---------------SUPERVISOR AND ADMINISTRATOR EMAILS-----------------")
+            print(tanks_parameters_results)
+        
+        return tanks_parameters_results
+
 
 """
 class Measurements(Base):

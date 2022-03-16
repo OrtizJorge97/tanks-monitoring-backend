@@ -6,6 +6,7 @@ from . import tank_api_blueprint, session
 from .models import *
 from .. import socketio
 from .Services.database import AsyncDataBaseManager
+from backend.app.main.Services.notifications import send_tank_alert_mail
 
 # DATA TO RECEIVE FROM TANKS AND TO SAVE IT INTO HISTORIC DATA
 
@@ -24,7 +25,18 @@ def post_data():
         future = executor.submit(AsyncDataBaseManager.store_measurements, payload)
         result = future.result()
 
-        print(company)
+        future = executor.submit(AsyncDataBaseManager.get_company_staff, company)
+        email_results = future.result()
+
+        future = executor.submit(AsyncDataBaseManager.get_company_staff, company)
+        email_results = future.result()
+
+        future = executor.submit(AsyncDataBaseManager.get_tanks_parameters_query, company)
+        tanks_parameters_results = future.result()
+
+        future = executor.submit(send_tank_alert_mail, email_results, tanks_parameters_results, payload)
+        future.result()
+        
 
         #emit('tanks_data', payload, namespace='/private', to=company)
         socketio.emit('tanks_data', payload, namespace='/private', to=company)
@@ -43,13 +55,11 @@ def fetch_tanks():
         company = request.args.get('company')
 
         executor = concurrent.futures.ThreadPoolExecutor()
-        future = executor.submit(
-            AsyncDataBaseManager.get_company_tanks, company)
+        future = executor.submit(AsyncDataBaseManager.get_company_tanks, company)
         tanks_company = future.result()
 
         executor = concurrent.futures.ThreadPoolExecutor()
-        future = executor.submit(
-            AsyncDataBaseManager.get_tanks_parameters, company)
+        future = executor.submit(AsyncDataBaseManager.get_tanks_parameters, company)
         tanks_parameters = future.result()
 
         tanks_parameters_list = []
@@ -78,3 +88,5 @@ def fetch_tanks():
         return make_response(jsonify(msg="Success fetching", tanks=tanks_parameters_list), 200)
     except Exception as e:
         return make_response(jsonify(msg=str(e)), 500)
+
+
