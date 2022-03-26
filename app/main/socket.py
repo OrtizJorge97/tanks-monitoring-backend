@@ -59,10 +59,17 @@ def on_join(user):
     session_id = request.sid
 
     user_db = session.query(Users).filter_by(email=email).first()
-    session.add(Sessions(session_identifier=session_id,
-                         user_id=user_db.id))
+    if not session.query(Sessions).filter_by(session_identifier=session_id).first():
+        session.add(Sessions(session_identifier=session_id,
+                            user_id=user_db.id))
+        session.commit()
+
     join_room(company)
+    print("user joined succesfully")
     emit('success_joinning', {"message": "Session succesfully joined"})
+
+
+
 
 
     """
