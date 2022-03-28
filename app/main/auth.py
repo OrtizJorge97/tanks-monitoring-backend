@@ -77,6 +77,26 @@ def add_user():
         return make_response(jsonify({"msg": str(e)}), 500)
 
 
+@auth_blueprint.route("/resend-confirmation-email", methods=['POST'])
+def resend_confirmation_email():
+    try:
+        bodyJson = request.get_json()
+        email = bodyJson['email']
+
+        print(email)
+        token = ts.dumps(email, salt=email_salt)
+        print("----------PRINTING URL FOR CONFIRMATION ACCOUNT------------")
+        print(url_for('auth.confirm_account', token=token))
+        activation_url = host_url + url_for('auth.confirm_account', token=token)
+        executor = concurrent.futures.ThreadPoolExecutor()
+        future = executor.submit(send_email, email, "Tanks Platform confirm email", f"Please click in this link {activation_url} to activate your account")
+        future.result()
+        return make_response(jsonify({"msg": "Confirmation email successfully resent"}), 200)
+    except Exception as e:
+        print(str(e))
+        return make_response(jsonify({"msg": str(e)}), 500)
+
+
 @auth_blueprint.route("/confirm-account/<token>")
 def confirm_account(token):
 

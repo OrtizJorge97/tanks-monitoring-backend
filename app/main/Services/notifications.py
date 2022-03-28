@@ -1,7 +1,7 @@
 import time
 import smtplib
 
-from backend.app import mail_user, mail_password, smtp_server_string, port
+from app import mail_user, mail_password, smtp_server_string, port
 
 def send_tank_alert_mail(to_mails, tanks_parameters, current_tank_values):
     to_emails = [mail['email'] for mail in to_mails]
