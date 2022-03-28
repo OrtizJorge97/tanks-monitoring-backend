@@ -6,7 +6,7 @@ from . import tank_api_blueprint, session
 from .models import *
 from .. import socketio
 from .Services.database import AsyncDataBaseManager
-from backend.app.main.Services.notifications import send_tank_alert_mail
+from app.main.Services.notifications import send_tank_alert_mail
 
 # DATA TO RECEIVE FROM TANKS AND TO SAVE IT INTO HISTORIC DATA
 
